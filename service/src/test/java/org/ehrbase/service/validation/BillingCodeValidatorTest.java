@@ -66,6 +66,7 @@ class BillingCodeValidatorTest {
     }
 
     private void enableProfile(String profileName, List<String> codeSystems) {
+        properties.setEnabled(true);
         BillingProfile profile = new BillingProfile();
         profile.setName(profileName);
         profile.setEnabled(true);
@@ -214,6 +215,7 @@ class BillingCodeValidatorTest {
 
     @Test
     void profileDisabled_returnsEmptyViolations() {
+        properties.setEnabled(true);
         BillingProfile profile = new BillingProfile();
         profile.setName(PROFILE_NAME);
         profile.setEnabled(false);
@@ -231,6 +233,7 @@ class BillingCodeValidatorTest {
 
     @Test
     void profileNotFound_returnsEmptyViolations() {
+        properties.setEnabled(true);
         CodePhrase cp = codePhrase(ICD10_SYSTEM, "E11.9");
         Composition composition = compositionWithCodes(cp);
 

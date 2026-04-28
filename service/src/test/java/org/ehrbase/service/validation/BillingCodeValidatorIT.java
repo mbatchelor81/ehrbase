@@ -59,6 +59,7 @@ class BillingCodeValidatorIT {
     void setUp() {
         fhirValidation = spy(new FhirTerminologyValidation("http://mock-fhir-server.local/fhir", true));
         properties = new ExternalValidationProperties();
+        properties.setEnabled(true);
 
         BillingProfile profile = new BillingProfile();
         profile.setName(PROFILE_NAME);
