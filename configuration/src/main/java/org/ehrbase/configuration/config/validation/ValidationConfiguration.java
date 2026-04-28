@@ -25,6 +25,7 @@ import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.cache.CacheProvider;
 import org.ehrbase.openehr.sdk.validation.terminology.ExternalTerminologyValidation;
 import org.ehrbase.openehr.sdk.validation.terminology.ExternalTerminologyValidationChain;
+import org.ehrbase.service.validation.BillingCodeValidator;
 import org.ehrbase.service.validation.FhirTerminologyValidation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -123,6 +124,11 @@ public class ValidationConfiguration {
             builder = builder.apply(filter.oauth2Configuration());
         }
         return builder.build();
+    }
+
+    @Bean
+    public BillingCodeValidator billingCodeValidator(ExternalTerminologyValidation externalTerminologyValidation) {
+        return new BillingCodeValidator(externalTerminologyValidation, properties);
     }
 
     public static ExternalTerminologyValidation nopTerminologyValidation() {

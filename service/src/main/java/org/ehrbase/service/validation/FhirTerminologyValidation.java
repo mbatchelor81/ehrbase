@@ -28,6 +28,7 @@ import com.nedap.archie.rm.support.identification.TerminologyId;
 import java.text.MessageFormat;
 import java.time.Duration;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -245,6 +246,22 @@ public class FhirTerminologyValidation implements ExternalTerminologyValidation 
                     .map(m -> new DvCodedText(m.get(DISP), new CodePhrase(new TerminologyId(m.get(SYS)), m.get(CODE))))
                     .toList();
         }
+    }
+
+    /**
+     * Validates multiple code/system pairs in a single logical pass, reusing the existing
+     * WebClient and cache infrastructure.
+     *
+     * @param params the list of {@link TerminologyParam} to validate
+     * @return a map from each param to its validation result
+     */
+    public Map<TerminologyParam, Try<Boolean, ConstraintViolationException>> validateBatch(
+            List<TerminologyParam> params) {
+        Map<TerminologyParam, Try<Boolean, ConstraintViolationException>> results = new HashMap<>();
+        for (TerminologyParam param : params) {
+            results.put(param, validate(param));
+        }
+        return results;
     }
 
     private Try<Boolean, ConstraintViolationException> validateCode(String url, CodePhrase codePhrase) {

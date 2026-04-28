@@ -18,6 +18,7 @@
 package org.ehrbase.configuration.config.validation;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -59,12 +60,51 @@ public class ExternalValidationProperties {
         this.failOnError = failOnError;
     }
 
+    private final Map<String, BillingProfile> billingProfiles = new HashMap<>();
+
     public Map<String, Provider> getProvider() {
         return provider;
     }
 
+    public Map<String, BillingProfile> getBillingProfiles() {
+        return billingProfiles;
+    }
+
     public enum ProviderType {
         FHIR
+    }
+
+    public static class BillingProfile {
+
+        private String name;
+
+        private List<String> codeSystems = List.of();
+
+        private boolean enabled = false;
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public List<String> getCodeSystems() {
+            return codeSystems;
+        }
+
+        public void setCodeSystems(List<String> codeSystems) {
+            this.codeSystems = codeSystems;
+        }
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
     }
 
     public static class Provider {

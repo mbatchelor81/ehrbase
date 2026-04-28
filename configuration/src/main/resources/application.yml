@@ -244,6 +244,14 @@ validation:
     #     # request-timeout: 30S # 30 Seconds default
     #     type: FHIR
     #     url: https://r4.ontoserver.csiro.au/fhir/
+    # billing-profiles:
+    #   us-claims:
+    #     name: us-claims
+    #     enabled: false
+    #     code-systems:
+    #       - http://hl7.org/fhir/sid/icd-10-cm
+    #       - http://www.ama-assn.org/go/cpt
+    #       - https://www.cms.gov/Medicare/Coding/HCPCSReleaseCodeSets
 
 # SSL Properties (used by Spring WebClient and Apache HTTP Client)
 client:
