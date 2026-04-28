@@ -241,6 +241,20 @@ class BillingCodeValidatorTest {
     }
 
     @Test
+    void externalTerminologyDisabled_returnsEmptyViolations() {
+        properties.setEnabled(false);
+        enableProfile(PROFILE_NAME, List.of(ICD10_SYSTEM));
+
+        CodePhrase cp = codePhrase(ICD10_SYSTEM, "E11.9");
+        Composition composition = compositionWithCodes(cp);
+
+        List<ConstraintViolation> violations = validator.validateComposition(composition, PROFILE_NAME);
+
+        assertTrue(violations.isEmpty());
+        verify(fhirValidationMock, never()).validate(any());
+    }
+
+    @Test
     void batchValidation_returnsCorrectPerCodeResults() {
         enableProfile(PROFILE_NAME, List.of(ICD10_SYSTEM, CPT_SYSTEM));
 

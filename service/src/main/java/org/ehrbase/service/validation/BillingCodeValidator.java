@@ -67,6 +67,11 @@ public class BillingCodeValidator {
      *     is not found, not enabled, or all codes are valid
      */
     public List<ConstraintViolation> validateComposition(Composition composition, String profileName) {
+        if (!properties.isEnabled()) {
+            LOG.debug("External terminology validation is disabled, skipping billing validation");
+            return List.of();
+        }
+
         BillingProfile profile = properties.getBillingProfiles().get(profileName);
         if (profile == null || !profile.isEnabled()) {
             LOG.debug("Billing profile '{}' is not configured or not enabled, skipping validation", profileName);
@@ -155,7 +160,7 @@ public class BillingCodeValidator {
                 continue;
             }
             String name = method.getName();
-            if (!name.startsWith("get") || name.equals("getClass")) {
+            if (!name.startsWith("get") || name.equals("getClass") || name.equals("getParent")) {
                 continue;
             }
             Class<?> returnType = method.getReturnType();
