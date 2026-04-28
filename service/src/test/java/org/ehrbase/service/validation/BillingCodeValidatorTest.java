@@ -125,7 +125,14 @@ class BillingCodeValidatorTest {
         CodePhrase cp = codePhrase(ICD10_SYSTEM, "E11.9");
         Composition composition = compositionWithCodes(cp);
 
-        when(fhirValidationMock.validate(any(TerminologyParam.class))).thenReturn(Try.success(Boolean.TRUE));
+        when(fhirValidationMock.validateBatch(ArgumentMatchers.anyList())).thenAnswer(invocation -> {
+            List<TerminologyParam> params = invocation.getArgument(0);
+            Map<TerminologyParam, Try<Boolean, ConstraintViolationException>> results = new java.util.HashMap<>();
+            for (TerminologyParam tp : params) {
+                results.put(tp, Try.success(Boolean.TRUE));
+            }
+            return results;
+        });
 
         List<ConstraintViolation> violations = validator.validateComposition(composition, PROFILE_NAME);
 
@@ -143,8 +150,14 @@ class BillingCodeValidatorTest {
                 "The specified code 'INVALID' is not known to belong to the specified code system '" + ICD10_SYSTEM
                         + "'");
 
-        when(fhirValidationMock.validate(any(TerminologyParam.class)))
-                .thenReturn(Try.failure(new ConstraintViolationException(List.of(violation))));
+        when(fhirValidationMock.validateBatch(ArgumentMatchers.anyList())).thenAnswer(invocation -> {
+            List<TerminologyParam> params = invocation.getArgument(0);
+            Map<TerminologyParam, Try<Boolean, ConstraintViolationException>> results = new java.util.HashMap<>();
+            for (TerminologyParam tp : params) {
+                results.put(tp, Try.failure(new ConstraintViolationException(List.of(violation))));
+            }
+            return results;
+        });
 
         List<ConstraintViolation> violations = validator.validateComposition(composition, PROFILE_NAME);
 
@@ -160,7 +173,14 @@ class BillingCodeValidatorTest {
         CodePhrase cp = codePhrase(CPT_SYSTEM, "99213");
         Composition composition = compositionWithCodes(cp);
 
-        when(fhirValidationMock.validate(any(TerminologyParam.class))).thenReturn(Try.success(Boolean.TRUE));
+        when(fhirValidationMock.validateBatch(ArgumentMatchers.anyList())).thenAnswer(invocation -> {
+            List<TerminologyParam> params = invocation.getArgument(0);
+            Map<TerminologyParam, Try<Boolean, ConstraintViolationException>> results = new java.util.HashMap<>();
+            for (TerminologyParam tp : params) {
+                results.put(tp, Try.success(Boolean.TRUE));
+            }
+            return results;
+        });
 
         List<ConstraintViolation> violations = validator.validateComposition(composition, PROFILE_NAME);
 
@@ -174,7 +194,14 @@ class BillingCodeValidatorTest {
         CodePhrase cp = codePhrase(HCPCS_SYSTEM, "A0021");
         Composition composition = compositionWithCodes(cp);
 
-        when(fhirValidationMock.validate(any(TerminologyParam.class))).thenReturn(Try.success(Boolean.TRUE));
+        when(fhirValidationMock.validateBatch(ArgumentMatchers.anyList())).thenAnswer(invocation -> {
+            List<TerminologyParam> params = invocation.getArgument(0);
+            Map<TerminologyParam, Try<Boolean, ConstraintViolationException>> results = new java.util.HashMap<>();
+            for (TerminologyParam tp : params) {
+                results.put(tp, Try.success(Boolean.TRUE));
+            }
+            return results;
+        });
 
         List<ConstraintViolation> violations = validator.validateComposition(composition, PROFILE_NAME);
 
@@ -245,8 +272,8 @@ class BillingCodeValidatorTest {
 
     @Test
     void externalTerminologyDisabled_returnsEmptyViolations() {
-        properties.setEnabled(false);
         enableProfile(PROFILE_NAME, List.of(ICD10_SYSTEM));
+        properties.setEnabled(false);
 
         CodePhrase cp = codePhrase(ICD10_SYSTEM, "E11.9");
         Composition composition = compositionWithCodes(cp);
@@ -255,6 +282,7 @@ class BillingCodeValidatorTest {
 
         assertTrue(violations.isEmpty());
         verify(fhirValidationMock, never()).validate(any());
+        verify(fhirValidationMock, never()).validateBatch(any());
     }
 
     @Test
