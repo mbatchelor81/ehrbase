@@ -30,13 +30,13 @@ import org.springframework.stereotype.Component;
 
 /**
  * Registers billing AQL stored queries on application startup.
- * Enabled by setting {@code ehrbase.billing.queries.register-on-startup=true}.
+ * Disabled by default; enable by setting {@code ehrbase.billing.queries.register-on-startup=true}.
  */
 @Component
 @ConditionalOnProperty(
         name = "ehrbase.billing.queries.register-on-startup",
         havingValue = "true",
-        matchIfMissing = true)
+        matchIfMissing = false)
 public class BillingQueryRegistrationService implements ApplicationRunner {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());

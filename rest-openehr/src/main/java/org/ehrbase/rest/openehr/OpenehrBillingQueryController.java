@@ -25,6 +25,7 @@ import java.util.List;
 import org.ehrbase.api.service.StoredQueryService;
 import org.ehrbase.openehr.sdk.response.dto.QueryDefinitionResponseData;
 import org.ehrbase.rest.BaseController;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,6 +35,7 @@ import org.springframework.web.bind.annotation.RestController;
  * REST controller for discovering billing-specific stored AQL queries.
  * Lists all stored queries registered under the {@code billing} namespace.
  */
+@ConditionalOnMissingBean(name = "primaryopenehrbillingquerycontroller")
 @Tag(name = "BILLING")
 @RestController
 @RequestMapping(
