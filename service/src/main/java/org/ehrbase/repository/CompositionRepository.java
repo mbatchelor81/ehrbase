@@ -239,6 +239,13 @@ public class CompositionRepository
                 .fetchOptional(Record1::value1);
     }
 
+    public List<UUID> findCompositionIdsByEhr(UUID ehrId) {
+        return context.select(COMP_VERSION.VO_ID)
+                .from(COMP_VERSION)
+                .where(COMP_VERSION.EHR_ID.eq(ehrId))
+                .fetch(Record1::value1);
+    }
+
     public Optional<UUID> findEHRforComposition(UUID compId) {
         return context.select(COMP_VERSION.EHR_ID)
                 .from(COMP_VERSION)
