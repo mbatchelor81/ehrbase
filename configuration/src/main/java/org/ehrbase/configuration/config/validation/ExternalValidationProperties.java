@@ -19,6 +19,7 @@ package org.ehrbase.configuration.config.validation;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.ehrbase.service.validation.BillingProfile;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
@@ -34,6 +35,8 @@ public class ExternalValidationProperties {
     private boolean failOnError = false;
 
     private final Map<String, Provider> provider = new HashMap<>();
+
+    private final Map<String, BillingProfile> billingProfiles = new HashMap<>();
 
     public boolean isEnabled() {
         return enabled;
@@ -61,6 +64,10 @@ public class ExternalValidationProperties {
 
     public Map<String, Provider> getProvider() {
         return provider;
+    }
+
+    public Map<String, BillingProfile> getBillingProfiles() {
+        return billingProfiles;
     }
 
     public enum ProviderType {

@@ -27,6 +27,7 @@ import com.nedap.archie.rm.datavalues.DvCodedText;
 import com.nedap.archie.rm.support.identification.TerminologyId;
 import java.text.MessageFormat;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -225,6 +226,24 @@ public class FhirTerminologyValidation implements ExternalTerminologyValidation 
             LOG.warn(format(ERR_EXPAND_VALUESET, e.getMessage()));
             return Collections.emptyList();
         }
+    }
+
+    public List<ConstraintViolation> batchValidate(List<TerminologyParam> params) {
+        List<ConstraintViolation> violations = new ArrayList<>();
+        for (TerminologyParam param : params) {
+            try {
+                Try<Boolean, ConstraintViolationException> result = validate(param);
+                if (result.isFailure()) {
+                    violations.addAll(result.getAsFailure().get().getConstraintViolations());
+                }
+            } catch (ExternalTerminologyValidationException e) {
+                throw e;
+            } catch (RuntimeException e) {
+                LOG.warn("Unexpected error during batch validation of param: {}", param, e);
+                violations.add(new ConstraintViolation("Validation error: " + e.getMessage()));
+            }
+        }
+        return violations;
     }
 
     abstract static class ValueSetConverter {
