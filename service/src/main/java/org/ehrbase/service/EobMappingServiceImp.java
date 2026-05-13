@@ -170,6 +170,10 @@ public class EobMappingServiceImp implements EobMappingService {
 
     private Date convertDvDateTime(com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime dvDateTime) {
         TemporalAccessor temporal = dvDateTime.getValue();
+        if (temporal == null) {
+            logger.warn("DvDateTime has null value, skipping created date");
+            return null;
+        }
         Instant instant;
         if (temporal instanceof OffsetDateTime odt) {
             instant = odt.toInstant();
