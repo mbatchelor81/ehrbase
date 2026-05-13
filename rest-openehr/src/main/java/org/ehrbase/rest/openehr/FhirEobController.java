@@ -44,7 +44,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class FhirEobController extends BaseController {
 
     private static final String APPLICATION_FHIR_JSON = "application/fhir+json";
-    private static final int DEFAULT_COUNT = 10;
     private static final int MAX_COUNT = 100;
 
     private final EobMappingService eobMappingService;
@@ -66,7 +65,7 @@ public class FhirEobController extends BaseController {
 
         UUID ehrId = parsePatientId(patientId);
 
-        int effectiveCount = Math.max(1, Math.min(count, MAX_COUNT));
+        int effectiveCount = Math.max(0, Math.min(count, MAX_COUNT));
         int effectiveOffset = Math.max(0, offset);
 
         EobResult result = eobMappingService.getExplanationOfBenefits(ehrId, effectiveOffset, effectiveCount);
