@@ -243,6 +243,7 @@ public class CompositionRepository
         return context.select(COMP_VERSION.VO_ID)
                 .from(COMP_VERSION)
                 .where(COMP_VERSION.EHR_ID.eq(ehrId))
+                .orderBy(COMP_VERSION.VO_ID.asc())
                 .fetch(Record1::value1);
     }
 

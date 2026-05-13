@@ -38,6 +38,7 @@ import java.util.Optional;
 import java.util.UUID;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.EhrService;
+import org.ehrbase.api.service.EobMappingService.EobResult;
 import org.ehrbase.repository.CompositionRepository;
 import org.hl7.fhir.r4.model.ExplanationOfBenefit;
 import org.junit.jupiter.api.BeforeEach;
@@ -213,9 +214,10 @@ class EobMappingServiceImpTest {
         when(compositionRepository.findCompositionIdsByEhr(ehrId)).thenReturn(List.of(compId));
         when(compositionService.retrieve(eq(ehrId), eq(compId), isNull())).thenReturn(Optional.of(composition));
 
-        List<ExplanationOfBenefit> results = mappingService.getExplanationOfBenefits(ehrId, 0, 10);
+        EobResult result = mappingService.getExplanationOfBenefits(ehrId, 0, 10);
 
-        assertThat(results).hasSize(1);
+        assertThat(result.eobList()).hasSize(1);
+        assertThat(result.total()).isEqualTo(1);
         verify(compositionService).retrieve(eq(ehrId), eq(compId), isNull());
         verify(ehrService).checkEhrExists(ehrId);
     }
@@ -232,9 +234,10 @@ class EobMappingServiceImpTest {
         when(compositionRepository.findCompositionIdsByEhr(ehrId)).thenReturn(List.of(compId1, compId2, compId3));
         when(compositionService.retrieve(eq(ehrId), any(), isNull())).thenReturn(Optional.of(composition));
 
-        List<ExplanationOfBenefit> results = mappingService.getExplanationOfBenefits(ehrId, 1, 1);
+        EobResult result = mappingService.getExplanationOfBenefits(ehrId, 1, 1);
 
-        assertThat(results).hasSize(1);
+        assertThat(result.eobList()).hasSize(1);
+        assertThat(result.total()).isEqualTo(3);
     }
 
     @Test
@@ -244,9 +247,10 @@ class EobMappingServiceImpTest {
         doNothing().when(ehrService).checkEhrExists(ehrId);
         when(compositionRepository.findCompositionIdsByEhr(ehrId)).thenReturn(List.of());
 
-        List<ExplanationOfBenefit> results = mappingService.getExplanationOfBenefits(ehrId, 0, 10);
+        EobResult result = mappingService.getExplanationOfBenefits(ehrId, 0, 10);
 
-        assertThat(results).isEmpty();
+        assertThat(result.eobList()).isEmpty();
+        assertThat(result.total()).isEqualTo(0);
     }
 
     private Composition createMinimalComposition() {

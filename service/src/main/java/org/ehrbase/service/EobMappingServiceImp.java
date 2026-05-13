@@ -32,6 +32,11 @@ import com.nedap.archie.rm.datavalues.DvCodedText;
 import com.nedap.archie.rm.datavalues.DvText;
 import com.nedap.archie.rm.datavalues.quantity.DvQuantity;
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -95,7 +100,7 @@ public class EobMappingServiceImp implements EobMappingService {
         }
 
         if (composition.getContext() != null && composition.getContext().getStartTime() != null) {
-            eob.setCreated(new Date());
+            eob.setCreated(convertDvDateTime(composition.getContext().getStartTime()));
         }
 
         eob.setType(new CodeableConcept()
@@ -142,13 +147,14 @@ public class EobMappingServiceImp implements EobMappingService {
     }
 
     @Override
-    public List<ExplanationOfBenefit> getExplanationOfBenefits(UUID ehrId, int offset, int count) {
+    public EobResult getExplanationOfBenefits(UUID ehrId, int offset, int count) {
         ehrService.checkEhrExists(ehrId);
 
         List<UUID> compositionIds = compositionRepository.findCompositionIdsByEhr(ehrId);
+        int totalCount = compositionIds.size();
 
-        int fromIndex = Math.min(offset, compositionIds.size());
-        int toIndex = Math.min(fromIndex + count, compositionIds.size());
+        int fromIndex = Math.min(offset, totalCount);
+        int toIndex = Math.min(fromIndex + count, totalCount);
         List<UUID> pagedIds = compositionIds.subList(fromIndex, toIndex);
 
         List<ExplanationOfBenefit> results = new ArrayList<>();
@@ -159,7 +165,20 @@ public class EobMappingServiceImp implements EobMappingService {
                     .ifPresent(results::add);
         }
 
-        return results;
+        return new EobResult(results, totalCount);
+    }
+
+    private Date convertDvDateTime(com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime dvDateTime) {
+        TemporalAccessor temporal = dvDateTime.getValue();
+        Instant instant;
+        if (temporal instanceof OffsetDateTime odt) {
+            instant = odt.toInstant();
+        } else if (temporal instanceof LocalDateTime ldt) {
+            instant = ldt.toInstant(ZoneOffset.UTC);
+        } else {
+            instant = Instant.now();
+        }
+        return Date.from(instant);
     }
 
     private int extractDiagnoses(ContentItem item, List<DiagnosisComponent> diagnoses, int sequence) {

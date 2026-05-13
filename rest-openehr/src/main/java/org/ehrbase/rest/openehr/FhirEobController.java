@@ -18,11 +18,11 @@
 package org.ehrbase.rest.openehr;
 
 import ca.uhn.fhir.context.FhirContext;
-import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.service.EobMappingService;
+import org.ehrbase.api.service.EobMappingService.EobResult;
 import org.ehrbase.rest.BaseController;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.ExplanationOfBenefit;
@@ -69,14 +69,13 @@ public class FhirEobController extends BaseController {
         int effectiveCount = Math.max(1, Math.min(count, MAX_COUNT));
         int effectiveOffset = Math.max(0, offset);
 
-        List<ExplanationOfBenefit> eobList =
-                eobMappingService.getExplanationOfBenefits(ehrId, effectiveOffset, effectiveCount);
+        EobResult result = eobMappingService.getExplanationOfBenefits(ehrId, effectiveOffset, effectiveCount);
 
         Bundle bundle = new Bundle();
         bundle.setType(Bundle.BundleType.SEARCHSET);
-        bundle.setTotal(eobList.size());
+        bundle.setTotal(result.total());
 
-        for (ExplanationOfBenefit eob : eobList) {
+        for (ExplanationOfBenefit eob : result.eobList()) {
             Bundle.BundleEntryComponent entry = new Bundle.BundleEntryComponent();
             entry.setResource(eob);
             if (eob.getId() != null) {
