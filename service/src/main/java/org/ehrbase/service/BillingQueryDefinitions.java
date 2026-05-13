@@ -18,6 +18,7 @@
 package org.ehrbase.service;
 
 import java.util.List;
+import org.ehrbase.api.service.StoredQueryService;
 
 /**
  * Defines stored AQL queries for extracting billing-relevant clinical data from EHRbase compositions.
@@ -27,7 +28,7 @@ public final class BillingQueryDefinitions {
 
     private BillingQueryDefinitions() {}
 
-    public static final String QUERY_TYPE = "AQL";
+    public static final String QUERY_TYPE = StoredQueryService.AQL_QUERY_TYPE;
     public static final String VERSION = "1.0.0";
 
     public static final String DIAGNOSIS_CODES_NAME = "billing::diagnosis-codes";
