@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.UUID;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.service.EobMappingService;
+import org.ehrbase.api.service.EobMappingService.EobResult;
 import org.hl7.fhir.r4.model.ExplanationOfBenefit;
 import org.hl7.fhir.r4.model.ExplanationOfBenefit.ExplanationOfBenefitStatus;
 import org.hl7.fhir.r4.model.ExplanationOfBenefit.Use;
@@ -55,7 +56,7 @@ class FhirEobControllerTest {
         ExplanationOfBenefit eob = createTestEob(ehrId);
 
         when(mockEobMappingService.getExplanationOfBenefits(eq(ehrId), eq(0), anyInt()))
-                .thenReturn(List.of(eob));
+                .thenReturn(new EobResult(List.of(eob), 1));
 
         ResponseEntity<String> response = controller.getExplanationOfBenefit(ehrId.toString(), 0, 10);
 
@@ -70,7 +71,7 @@ class FhirEobControllerTest {
         UUID ehrId = UUID.fromString("a6ddec4c-a68a-49ef-963e-3e0bc1970a28");
 
         when(mockEobMappingService.getExplanationOfBenefits(eq(ehrId), eq(0), anyInt()))
-                .thenReturn(List.of());
+                .thenReturn(new EobResult(List.of(), 0));
 
         ResponseEntity<String> response = controller.getExplanationOfBenefit("Patient/" + ehrId, 0, 10);
 
@@ -82,7 +83,7 @@ class FhirEobControllerTest {
         UUID ehrId = UUID.fromString("a6ddec4c-a68a-49ef-963e-3e0bc1970a28");
 
         when(mockEobMappingService.getExplanationOfBenefits(eq(ehrId), eq(0), anyInt()))
-                .thenReturn(List.of());
+                .thenReturn(new EobResult(List.of(), 0));
 
         ResponseEntity<String> response = controller.getExplanationOfBenefit(ehrId.toString(), 0, 10);
 
@@ -102,7 +103,7 @@ class FhirEobControllerTest {
         UUID ehrId = UUID.fromString("a6ddec4c-a68a-49ef-963e-3e0bc1970a28");
 
         when(mockEobMappingService.getExplanationOfBenefits(eq(ehrId), eq(0), eq(100)))
-                .thenReturn(List.of());
+                .thenReturn(new EobResult(List.of(), 0));
 
         // count > MAX_COUNT should be clamped to MAX_COUNT
         ResponseEntity<String> response = controller.getExplanationOfBenefit(ehrId.toString(), -1, 999);

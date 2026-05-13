@@ -28,6 +28,11 @@ import org.hl7.fhir.r4.model.ExplanationOfBenefit;
 public interface EobMappingService {
 
     /**
+     * Result of a paginated EOB query, including the total count of matching resources.
+     */
+    record EobResult(List<ExplanationOfBenefit> eobList, int total) {}
+
+    /**
      * Maps an openEHR Composition to a FHIR R4 ExplanationOfBenefit resource.
      *
      * @param ehrId       the EHR identifier used as the patient reference
@@ -37,13 +42,13 @@ public interface EobMappingService {
     ExplanationOfBenefit mapToEob(UUID ehrId, Composition composition);
 
     /**
-     * Retrieves and maps all compositions for a given EHR to ExplanationOfBenefit resources.
+     * Retrieves and maps compositions for a given EHR to ExplanationOfBenefit resources.
      * Routes through CompositionService to enforce access controls.
      *
      * @param ehrId  the EHR identifier (patient reference)
      * @param offset pagination offset
      * @param count  maximum number of results to return
-     * @return list of ExplanationOfBenefit resources
+     * @return an EobResult containing the paged list and the total count of matching resources
      */
-    List<ExplanationOfBenefit> getExplanationOfBenefits(UUID ehrId, int offset, int count);
+    EobResult getExplanationOfBenefits(UUID ehrId, int offset, int count);
 }
