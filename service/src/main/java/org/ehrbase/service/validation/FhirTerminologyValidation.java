@@ -236,6 +236,8 @@ public class FhirTerminologyValidation implements ExternalTerminologyValidation 
                 if (result.isFailure()) {
                     violations.addAll(result.getAsFailure().get().getConstraintViolations());
                 }
+            } catch (ExternalTerminologyValidationException e) {
+                throw e;
             } catch (RuntimeException e) {
                 LOG.warn("Unexpected error during batch validation of param: {}", param, e);
                 violations.add(new ConstraintViolation("Validation error: " + e.getMessage()));
