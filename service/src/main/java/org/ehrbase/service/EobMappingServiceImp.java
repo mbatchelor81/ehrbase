@@ -175,8 +175,13 @@ public class EobMappingServiceImp implements EobMappingService {
             instant = odt.toInstant();
         } else if (temporal instanceof LocalDateTime ldt) {
             instant = ldt.toInstant(ZoneOffset.UTC);
+        } else if (temporal instanceof Instant inst) {
+            instant = inst;
         } else {
-            instant = Instant.now();
+            logger.warn(
+                    "Unhandled temporal type {} in DvDateTime, skipping created date",
+                    temporal.getClass().getName());
+            return null;
         }
         return Date.from(instant);
     }
