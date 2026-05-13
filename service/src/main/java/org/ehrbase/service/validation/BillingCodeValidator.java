@@ -18,6 +18,7 @@
 package org.ehrbase.service.validation;
 
 import com.nedap.archie.rm.composition.Action;
+import com.nedap.archie.rm.composition.AdminEntry;
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.composition.ContentItem;
 import com.nedap.archie.rm.composition.Entry;
@@ -93,6 +94,7 @@ public class BillingCodeValidator {
      */
     public void validateAll(Composition composition) {
         List<ConstraintViolation> allViolations = new ArrayList<>();
+        List<DvCodedText> codedEntries = extractCodedEntries(composition);
 
         for (Map.Entry<String, BillingProfile> entry : billingProfiles.entrySet()) {
             if (!entry.getValue().isEnabled()) {
@@ -100,7 +102,6 @@ public class BillingCodeValidator {
                 continue;
             }
 
-            List<DvCodedText> codedEntries = extractCodedEntries(composition);
             allViolations.addAll(validateAgainstProfile(codedEntries, entry.getValue()));
         }
 
@@ -143,6 +144,8 @@ public class BillingCodeValidator {
             }
         } else if (entry instanceof Action action) {
             collectFromItemStructure(action.getDescription(), codedEntries);
+        } else if (entry instanceof AdminEntry adminEntry) {
+            collectFromItemStructure(adminEntry.getData(), codedEntries);
         }
     }
 

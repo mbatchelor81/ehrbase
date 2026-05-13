@@ -231,9 +231,14 @@ public class FhirTerminologyValidation implements ExternalTerminologyValidation 
     public List<ConstraintViolation> batchValidate(List<TerminologyParam> params) {
         List<ConstraintViolation> violations = new ArrayList<>();
         for (TerminologyParam param : params) {
-            Try<Boolean, ConstraintViolationException> result = validate(param);
-            if (result.isFailure()) {
-                violations.addAll(result.getAsFailure().get().getConstraintViolations());
+            try {
+                Try<Boolean, ConstraintViolationException> result = validate(param);
+                if (result.isFailure()) {
+                    violations.addAll(result.getAsFailure().get().getConstraintViolations());
+                }
+            } catch (RuntimeException e) {
+                LOG.warn("Unexpected error during batch validation of param: {}", param, e);
+                violations.add(new ConstraintViolation("Validation error: " + e.getMessage()));
             }
         }
         return violations;
