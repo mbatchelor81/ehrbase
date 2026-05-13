@@ -58,13 +58,13 @@ class OpenehrBillingQueryControllerTest {
 
     @Test
     void listBillingQueries_returnsEmptyListWhenNoBillingQueriesRegistered() {
-        doReturn(Collections.emptyList()).when(mockStoredQueryService).retrieveStoredQueries("billing");
+        doReturn(Collections.emptyList()).when(mockStoredQueryService).retrieveStoredQueries("billing::");
 
         ResponseEntity<List<QueryDefinitionResponseData>> response = spyController.listBillingQueries();
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull().isEmpty();
-        verify(mockStoredQueryService).retrieveStoredQueries("billing");
+        verify(mockStoredQueryService).retrieveStoredQueries("billing::");
     }
 
     @Test
@@ -73,7 +73,7 @@ class OpenehrBillingQueryControllerTest {
                 resultDto("billing::diagnosis-codes", "1.0.0", "SELECT e/ehr_id/value FROM EHR e"),
                 resultDto("billing::procedure-codes", "1.0.0", "SELECT e/ehr_id/value FROM EHR e"));
 
-        doReturn(dtos).when(mockStoredQueryService).retrieveStoredQueries("billing");
+        doReturn(dtos).when(mockStoredQueryService).retrieveStoredQueries("billing::");
 
         ResponseEntity<List<QueryDefinitionResponseData>> response = spyController.listBillingQueries();
 
@@ -85,10 +85,10 @@ class OpenehrBillingQueryControllerTest {
 
     @Test
     void listBillingQueries_queriesWithBillingNamespace() {
-        doReturn(Collections.emptyList()).when(mockStoredQueryService).retrieveStoredQueries("billing");
+        doReturn(Collections.emptyList()).when(mockStoredQueryService).retrieveStoredQueries("billing::");
 
         spyController.listBillingQueries();
 
-        verify(mockStoredQueryService).retrieveStoredQueries("billing");
+        verify(mockStoredQueryService).retrieveStoredQueries("billing::");
     }
 }

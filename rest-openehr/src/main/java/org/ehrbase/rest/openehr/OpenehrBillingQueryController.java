@@ -43,7 +43,7 @@ import org.springframework.web.bind.annotation.RestController;
         produces = APPLICATION_JSON_VALUE)
 public class OpenehrBillingQueryController extends BaseController {
 
-    private static final String BILLING_NAMESPACE = "billing";
+    private static final String BILLING_NAMESPACE = "billing::";
 
     private final StoredQueryService storedQueryService;
 
