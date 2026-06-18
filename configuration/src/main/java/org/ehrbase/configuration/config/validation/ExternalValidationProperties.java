@@ -17,7 +17,9 @@
  */
 package org.ehrbase.configuration.config.validation;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -34,6 +36,8 @@ public class ExternalValidationProperties {
     private boolean failOnError = false;
 
     private final Map<String, Provider> provider = new HashMap<>();
+
+    private final Map<String, BillingProfile> billingProfiles = new HashMap<>();
 
     public boolean isEnabled() {
         return enabled;
@@ -61,6 +65,10 @@ public class ExternalValidationProperties {
 
     public Map<String, Provider> getProvider() {
         return provider;
+    }
+
+    public Map<String, BillingProfile> getBillingProfiles() {
+        return billingProfiles;
     }
 
     public enum ProviderType {
@@ -97,6 +105,49 @@ public class ExternalValidationProperties {
 
         public void setUrl(String url) {
             this.url = url;
+        }
+    }
+
+    public static class BillingProfile {
+
+        private boolean enabled = false;
+
+        private List<String> diagnosisCodeSystems = new ArrayList<>();
+
+        private List<String> procedureCodeSystems = new ArrayList<>();
+
+        private List<String> supportingCodeSystems = new ArrayList<>();
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        public List<String> getDiagnosisCodeSystems() {
+            return diagnosisCodeSystems;
+        }
+
+        public void setDiagnosisCodeSystems(List<String> diagnosisCodeSystems) {
+            this.diagnosisCodeSystems = diagnosisCodeSystems;
+        }
+
+        public List<String> getProcedureCodeSystems() {
+            return procedureCodeSystems;
+        }
+
+        public void setProcedureCodeSystems(List<String> procedureCodeSystems) {
+            this.procedureCodeSystems = procedureCodeSystems;
+        }
+
+        public List<String> getSupportingCodeSystems() {
+            return supportingCodeSystems;
+        }
+
+        public void setSupportingCodeSystems(List<String> supportingCodeSystems) {
+            this.supportingCodeSystems = supportingCodeSystems;
         }
     }
 }
