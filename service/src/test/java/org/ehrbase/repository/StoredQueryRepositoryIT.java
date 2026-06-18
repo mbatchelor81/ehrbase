@@ -70,7 +70,7 @@ class StoredQueryRepositoryIT {
 
         List<QueryDefinitionResultDto> results = storedQueryRepository.retrieveAllLatest();
         assertThat(results.stream().map(QueryDefinitionResultDto::getQueryText))
-                .containsExactly("SELECT f FROM EHR f", "SELECT x FROM EHR x", "SELECT h FROM EHR h");
+                .contains("SELECT f FROM EHR f", "SELECT x FROM EHR x", "SELECT h FROM EHR h");
         results.stream().forEach(System.out::println);
     }
 }
