@@ -56,6 +56,7 @@ import org.ehrbase.openehr.sdk.validation.terminology.ExternalTerminologyValidat
 import org.ehrbase.openehr.sdk.validation.terminology.ItemStructureVisitor;
 import org.ehrbase.openehr.sdk.validation.webtemplate.FastRMObjectValidator;
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
+import org.ehrbase.service.validation.BillingCodeValidator;
 import org.ehrbase.service.validation.ValidationProperties;
 import org.ehrbase.util.FolderUtils;
 import org.slf4j.Logger;
@@ -78,6 +79,7 @@ public class ValidationServiceImp implements ValidationService {
 
     private final TerminologyService terminologyService;
     private final boolean folderValidationEnabled;
+    private final List<BillingCodeValidator> billingCodeValidators;
 
     private final ThreadLocal<LocatableValidator> locatableValidator;
 
@@ -88,10 +90,12 @@ public class ValidationServiceImp implements ValidationService {
             TerminologyService terminologyService,
             ValidationProperties validationProperties,
             ObjectProvider<ExternalTerminologyValidation> objectProvider,
-            @Value("${cache.validation.useSharedRMPathQueryCache:true}") boolean sharedAqlQueryCache) {
+            @Value("${cache.validation.useSharedRMPathQueryCache:true}") boolean sharedAqlQueryCache,
+            List<BillingCodeValidator> billingCodeValidators) {
         this.templateService = templateService;
         this.terminologyService = terminologyService;
         this.folderValidationEnabled = validationProperties.validateFolders();
+        this.billingCodeValidators = billingCodeValidators != null ? billingCodeValidators : List.of();
 
         boolean disableStrictValidation = !validationProperties.validateRmConstraints();
         if (disableStrictValidation) {
@@ -186,6 +190,24 @@ public class ValidationServiceImp implements ValidationService {
             itemStructureVisitor.validate(composition);
         } catch (ReflectiveOperationException e) {
             throw new InternalServerException(e);
+        }
+
+        // billing code validation (opt-in per profile)
+        validateBillingCodes(composition);
+    }
+
+    private void validateBillingCodes(Composition composition) {
+        if (billingCodeValidators.isEmpty()) {
+            return;
+        }
+
+        List<ConstraintViolation> allViolations = new ArrayList<>();
+        for (BillingCodeValidator validator : billingCodeValidators) {
+            allViolations.addAll(validator.validate(composition));
+        }
+
+        if (!allViolations.isEmpty()) {
+            throw new ConstraintViolationException(allViolations);
         }
     }
 

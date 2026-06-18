@@ -18,13 +18,18 @@
 package org.ehrbase.configuration.config.validation;
 
 import com.jayway.jsonpath.DocumentContext;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.ehrbase.api.dto.BillingCodeSystemConfig;
 import org.ehrbase.api.exception.BadGatewayException;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.cache.CacheProvider;
 import org.ehrbase.openehr.sdk.validation.terminology.ExternalTerminologyValidation;
 import org.ehrbase.openehr.sdk.validation.terminology.ExternalTerminologyValidationChain;
+import org.ehrbase.service.validation.BillingCodeValidator;
 import org.ehrbase.service.validation.FhirTerminologyValidation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -127,6 +132,60 @@ public class ValidationConfiguration {
 
     public static ExternalTerminologyValidation nopTerminologyValidation() {
         return new NopExternalTerminologyValidation(ERR_MSG);
+    }
+
+    @Bean
+    public List<BillingCodeValidator> billingCodeValidators(
+            ExternalTerminologyValidation externalTerminologyValidation) {
+        Map<String, ExternalValidationProperties.BillingProfile> profiles = properties.getBillingProfiles();
+        if (profiles.isEmpty()) {
+            return List.of();
+        }
+
+        List<BillingCodeValidator> validators = new ArrayList<>();
+        for (Map.Entry<String, ExternalValidationProperties.BillingProfile> entry : profiles.entrySet()) {
+            ExternalValidationProperties.BillingProfile profile = entry.getValue();
+            if (!profile.isEnabled()) {
+                logger.info("Billing profile '{}' is disabled, skipping", entry.getKey());
+                continue;
+            }
+
+            logger.info(
+                    "Initializing billing profile '{}' with diagnosis={}, procedure={}, supporting={}",
+                    entry.getKey(),
+                    profile.getDiagnosisCodeSystems(),
+                    profile.getProcedureCodeSystems(),
+                    profile.getSupportingCodeSystems());
+
+            validators.add(new BillingCodeValidator(
+                    new HashSet<>(profile.getDiagnosisCodeSystems()),
+                    new HashSet<>(profile.getProcedureCodeSystems()),
+                    new HashSet<>(profile.getSupportingCodeSystems()),
+                    externalTerminologyValidation));
+        }
+        return validators;
+    }
+
+    @Bean
+    public BillingCodeSystemConfig billingCodeSystemConfig() {
+        Map<String, ExternalValidationProperties.BillingProfile> profiles = properties.getBillingProfiles();
+
+        List<String> diagnosisSystems = new ArrayList<>();
+        List<String> procedureSystems = new ArrayList<>();
+        List<String> supportingSystems = new ArrayList<>();
+
+        for (ExternalValidationProperties.BillingProfile profile : profiles.values()) {
+            if (profile.isEnabled()) {
+                diagnosisSystems.addAll(profile.getDiagnosisCodeSystems());
+                procedureSystems.addAll(profile.getProcedureCodeSystems());
+                supportingSystems.addAll(profile.getSupportingCodeSystems());
+            }
+        }
+
+        if (diagnosisSystems.isEmpty() && procedureSystems.isEmpty()) {
+            return BillingCodeSystemConfig.defaults();
+        }
+        return new BillingCodeSystemConfig(diagnosisSystems, procedureSystems, supportingSystems);
     }
 
     private FhirTerminologyValidation fhirTerminologyValidation(String url, WebClient webClient) {

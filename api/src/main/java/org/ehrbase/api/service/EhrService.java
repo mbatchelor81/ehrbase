@@ -171,4 +171,13 @@ public interface EhrService {
      * @throws StateConflictException if the EHR is not modifiable.
      */
     void checkEhrExistsAndIsModifiable(UUID ehrId);
+
+    /**
+     * Checks if the EHR with the given UUID is queryable (is_queryable = true).
+     *
+     * @param ehrId EHR ID to check
+     * @return true if the EHR exists and is queryable, false if the EHR exists but is not queryable
+     * @throws ObjectNotFoundException if no EHR is found
+     */
+    boolean isEhrQueryable(UUID ehrId);
 }

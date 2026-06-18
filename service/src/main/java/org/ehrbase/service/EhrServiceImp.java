@@ -293,4 +293,10 @@ public class EhrServiceImp implements EhrService {
             throw new StateConflictException(String.format("EHR with id %s does not allow modification", ehrId));
         }
     }
+
+    @Override
+    public boolean isEhrQueryable(UUID ehrId) {
+        return Optional.ofNullable(ehrRepository.fetchIsQueryable(ehrId))
+                .orElseThrow(() -> ehrNotFoundException(ehrId));
+    }
 }
