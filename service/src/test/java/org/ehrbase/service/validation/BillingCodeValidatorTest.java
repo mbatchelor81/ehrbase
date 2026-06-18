@@ -32,7 +32,6 @@ import com.nedap.archie.rm.composition.Observation;
 import com.nedap.archie.rm.composition.Section;
 import com.nedap.archie.rm.datastructures.Cluster;
 import com.nedap.archie.rm.datastructures.Element;
-import com.nedap.archie.rm.datastructures.Event;
 import com.nedap.archie.rm.datastructures.History;
 import com.nedap.archie.rm.datastructures.Item;
 import com.nedap.archie.rm.datastructures.ItemStructure;
@@ -63,18 +62,12 @@ class BillingCodeValidatorTest {
 
     private BillingCodeValidator createValidator() {
         return new BillingCodeValidator(
-                Set.of(ICD10_SYSTEM),
-                Set.of(CPT_SYSTEM, HCPCS_SYSTEM),
-                Set.of(),
-                terminologyValidation);
+                Set.of(ICD10_SYSTEM), Set.of(CPT_SYSTEM, HCPCS_SYSTEM), Set.of(), terminologyValidation);
     }
 
     private BillingCodeValidator createValidatorWithSupporting() {
         return new BillingCodeValidator(
-                Set.of(ICD10_SYSTEM),
-                Set.of(CPT_SYSTEM),
-                Set.of(SNOMED_SYSTEM),
-                terminologyValidation);
+                Set.of(ICD10_SYSTEM), Set.of(CPT_SYSTEM), Set.of(SNOMED_SYSTEM), terminologyValidation);
     }
 
     // --- No-op / disabled profile tests ---
@@ -105,8 +98,7 @@ class BillingCodeValidatorTest {
 
     @Test
     void validate_noBillingCodeSystems_returnsNoViolations() {
-        BillingCodeValidator validator = new BillingCodeValidator(
-                Set.of(), Set.of(), Set.of(), terminologyValidation);
+        BillingCodeValidator validator = new BillingCodeValidator(Set.of(), Set.of(), Set.of(), terminologyValidation);
 
         Composition composition = compositionWithCodedElement(ICD10_SYSTEM, "E11.9");
 
@@ -151,8 +143,8 @@ class BillingCodeValidatorTest {
     void validate_invalidIcd10Code_returnsViolation() {
         BillingCodeValidator validator = createValidator();
         when(terminologyValidation.supports(any())).thenReturn(true);
-        when(terminologyValidation.validate(any())).thenReturn(
-                Try.failure(new ConstraintViolationException(
+        when(terminologyValidation.validate(any()))
+                .thenReturn(Try.failure(new ConstraintViolationException(
                         List.of(new ConstraintViolation("Code not found in ICD-10-CM")))));
 
         Composition composition = compositionWithCodedElement(ICD10_SYSTEM, "INVALID");
@@ -186,9 +178,9 @@ class BillingCodeValidatorTest {
     void validate_invalidCptCode_returnsViolation() {
         BillingCodeValidator validator = createValidator();
         when(terminologyValidation.supports(any())).thenReturn(true);
-        when(terminologyValidation.validate(any())).thenReturn(
-                Try.failure(new ConstraintViolationException(
-                        List.of(new ConstraintViolation("Code not found in CPT")))));
+        when(terminologyValidation.validate(any()))
+                .thenReturn(Try.failure(
+                        new ConstraintViolationException(List.of(new ConstraintViolation("Code not found in CPT")))));
 
         Composition composition = compositionWithCodedElement(CPT_SYSTEM, "XXXXX");
 
@@ -205,9 +197,9 @@ class BillingCodeValidatorTest {
     void validate_invalidHcpcsCode_returnsViolation() {
         BillingCodeValidator validator = createValidator();
         when(terminologyValidation.supports(any())).thenReturn(true);
-        when(terminologyValidation.validate(any())).thenReturn(
-                Try.failure(new ConstraintViolationException(
-                        List.of(new ConstraintViolation("Code not found")))));
+        when(terminologyValidation.validate(any()))
+                .thenReturn(Try.failure(
+                        new ConstraintViolationException(List.of(new ConstraintViolation("Code not found")))));
 
         Composition composition = compositionWithCodedElement(HCPCS_SYSTEM, "BADCODE");
 
@@ -226,9 +218,9 @@ class BillingCodeValidatorTest {
     void validate_supportingCodeSystem_classifiedCorrectly() {
         BillingCodeValidator validator = createValidatorWithSupporting();
         when(terminologyValidation.supports(any())).thenReturn(true);
-        when(terminologyValidation.validate(any())).thenReturn(
-                Try.failure(new ConstraintViolationException(
-                        List.of(new ConstraintViolation("Invalid code")))));
+        when(terminologyValidation.validate(any()))
+                .thenReturn(Try.failure(
+                        new ConstraintViolationException(List.of(new ConstraintViolation("Invalid code")))));
 
         Composition composition = compositionWithCodedElement(SNOMED_SYSTEM, "12345");
 
@@ -260,8 +252,7 @@ class BillingCodeValidatorTest {
         when(terminologyValidation.supports(any())).thenReturn(true);
         when(terminologyValidation.validate(any())).thenReturn(Try.success(Boolean.TRUE));
 
-        Composition composition = compositionWithMultipleDistinctCodes(
-                ICD10_SYSTEM, List.of("E11.9", "J06.9", "I10"));
+        Composition composition = compositionWithMultipleDistinctCodes(ICD10_SYSTEM, List.of("E11.9", "J06.9", "I10"));
 
         List<ConstraintViolation> violations = validator.validate(composition);
 
@@ -273,9 +264,9 @@ class BillingCodeValidatorTest {
     void validate_duplicateInvalidCodes_singleViolation() {
         BillingCodeValidator validator = createValidator();
         when(terminologyValidation.supports(any())).thenReturn(true);
-        when(terminologyValidation.validate(any())).thenReturn(
-                Try.failure(new ConstraintViolationException(
-                        List.of(new ConstraintViolation("Not found")))));
+        when(terminologyValidation.validate(any()))
+                .thenReturn(
+                        Try.failure(new ConstraintViolationException(List.of(new ConstraintViolation("Not found")))));
 
         Composition composition = compositionWithDuplicateCodes(ICD10_SYSTEM, "BAD", 5);
 
@@ -353,12 +344,11 @@ class BillingCodeValidatorTest {
     void validate_multipleInvalidBillingCodes_returnsAllViolations() {
         BillingCodeValidator validator = createValidator();
         when(terminologyValidation.supports(any())).thenReturn(true);
-        when(terminologyValidation.validate(any(TerminologyParam.class))).thenReturn(
-                Try.failure(new ConstraintViolationException(
-                        List.of(new ConstraintViolation("Not found")))));
+        when(terminologyValidation.validate(any(TerminologyParam.class)))
+                .thenReturn(
+                        Try.failure(new ConstraintViolationException(List.of(new ConstraintViolation("Not found")))));
 
-        Composition composition = compositionWithMultipleDistinctCodes(
-                ICD10_SYSTEM, List.of("BAD1", "BAD2"));
+        Composition composition = compositionWithMultipleDistinctCodes(ICD10_SYSTEM, List.of("BAD1", "BAD2"));
 
         List<ConstraintViolation> violations = validator.validate(composition);
 
@@ -448,9 +438,7 @@ class BillingCodeValidatorTest {
         ItemTree tree = new ItemTree();
         tree.setArchetypeNodeId("at0002");
         tree.setName(new DvText("tree"));
-        tree.setItems(List.<Item>of(
-                codedElement(ICD10_SYSTEM, "E11.9"),
-                codedElement("local", "at0005")));
+        tree.setItems(List.<Item>of(codedElement(ICD10_SYSTEM, "E11.9"), codedElement("local", "at0005")));
         eval.setData(tree);
 
         composition.setContent(List.of(eval));

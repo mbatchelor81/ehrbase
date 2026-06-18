@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.ehrbase.api.dto.BillingCodeSystemConfig;
 import org.ehrbase.api.exception.BadGatewayException;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.cache.CacheProvider;
@@ -134,7 +135,8 @@ public class ValidationConfiguration {
     }
 
     @Bean
-    public List<BillingCodeValidator> billingCodeValidators(ExternalTerminologyValidation externalTerminologyValidation) {
+    public List<BillingCodeValidator> billingCodeValidators(
+            ExternalTerminologyValidation externalTerminologyValidation) {
         Map<String, ExternalValidationProperties.BillingProfile> profiles = properties.getBillingProfiles();
         if (profiles.isEmpty()) {
             return List.of();
@@ -162,6 +164,28 @@ public class ValidationConfiguration {
                     externalTerminologyValidation));
         }
         return validators;
+    }
+
+    @Bean
+    public BillingCodeSystemConfig billingCodeSystemConfig() {
+        Map<String, ExternalValidationProperties.BillingProfile> profiles = properties.getBillingProfiles();
+
+        List<String> diagnosisSystems = new ArrayList<>();
+        List<String> procedureSystems = new ArrayList<>();
+        List<String> supportingSystems = new ArrayList<>();
+
+        for (ExternalValidationProperties.BillingProfile profile : profiles.values()) {
+            if (profile.isEnabled()) {
+                diagnosisSystems.addAll(profile.getDiagnosisCodeSystems());
+                procedureSystems.addAll(profile.getProcedureCodeSystems());
+                supportingSystems.addAll(profile.getSupportingCodeSystems());
+            }
+        }
+
+        if (diagnosisSystems.isEmpty() && procedureSystems.isEmpty()) {
+            return BillingCodeSystemConfig.defaults();
+        }
+        return new BillingCodeSystemConfig(diagnosisSystems, procedureSystems, supportingSystems);
     }
 
     private FhirTerminologyValidation fhirTerminologyValidation(String url, WebClient webClient) {

@@ -108,8 +108,8 @@ public class BillingCodeValidator {
                 ConstraintViolationException ex = result.getAsFailure().get();
                 for (ConstraintViolation cv : ex.getConstraintViolations()) {
                     String category = classifyCodeSystem(entry.system());
-                    violations.add(new ConstraintViolation(
-                            "Billing validation failed [%s] for code system '%s', code '%s': %s"
+                    violations.add(
+                            new ConstraintViolation("Billing validation failed [%s] for code system '%s', code '%s': %s"
                                     .formatted(category, entry.system(), entry.code(), cv.getMessage())));
                 }
             }
@@ -133,8 +133,11 @@ public class BillingCodeValidator {
 
             return terminologyValidation.validate(param);
         } catch (Exception e) {
-            LOG.warn("Error during billing code validation for system={}, code={}: {}",
-                    entry.system(), entry.code(), e.getMessage());
+            LOG.warn(
+                    "Error during billing code validation for system={}, code={}: {}",
+                    entry.system(),
+                    entry.code(),
+                    e.getMessage());
             return Try.success(Boolean.FALSE);
         }
     }
