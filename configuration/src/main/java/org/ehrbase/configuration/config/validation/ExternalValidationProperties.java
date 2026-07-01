@@ -17,7 +17,9 @@
  */
 package org.ehrbase.configuration.config.validation;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -34,6 +36,8 @@ public class ExternalValidationProperties {
     private boolean failOnError = false;
 
     private final Map<String, Provider> provider = new HashMap<>();
+
+    private final Map<String, BillingProfile> billingProfiles = new HashMap<>();
 
     public boolean isEnabled() {
         return enabled;
@@ -63,8 +67,65 @@ public class ExternalValidationProperties {
         return provider;
     }
 
+    public Map<String, BillingProfile> getBillingProfiles() {
+        return billingProfiles;
+    }
+
     public enum ProviderType {
         FHIR
+    }
+
+    public static class BillingProfile {
+
+        private String name;
+
+        private String description;
+
+        private List<String> codeSystems = new ArrayList<>();
+
+        private boolean enabled = true;
+
+        private String terminologyServerUrl;
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
+        }
+
+        public List<String> getCodeSystems() {
+            return codeSystems;
+        }
+
+        public void setCodeSystems(List<String> codeSystems) {
+            this.codeSystems = codeSystems;
+        }
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        public String getTerminologyServerUrl() {
+            return terminologyServerUrl;
+        }
+
+        public void setTerminologyServerUrl(String terminologyServerUrl) {
+            this.terminologyServerUrl = terminologyServerUrl;
+        }
     }
 
     public static class Provider {

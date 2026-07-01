@@ -18,6 +18,7 @@
 package org.ehrbase.configuration.config.validation;
 
 import com.jayway.jsonpath.DocumentContext;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import org.ehrbase.api.exception.BadGatewayException;
@@ -25,6 +26,7 @@ import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.cache.CacheProvider;
 import org.ehrbase.openehr.sdk.validation.terminology.ExternalTerminologyValidation;
 import org.ehrbase.openehr.sdk.validation.terminology.ExternalTerminologyValidationChain;
+import org.ehrbase.service.validation.BillingCodeValidator;
 import org.ehrbase.service.validation.FhirTerminologyValidation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -127,6 +129,63 @@ public class ValidationConfiguration {
 
     public static ExternalTerminologyValidation nopTerminologyValidation() {
         return new NopExternalTerminologyValidation(ERR_MSG);
+    }
+
+    @Bean
+    public Optional<BillingCodeValidator> billingCodeValidator(
+            ExternalTerminologyValidation externalTerminologyValidator) {
+        Map<String, ExternalValidationProperties.BillingProfile> billingProfiles = properties.getBillingProfiles();
+        if (billingProfiles.isEmpty()) {
+            logger.info("No billing profiles configured, BillingCodeValidator will not be created");
+            return Optional.empty();
+        }
+
+        FhirTerminologyValidation fhirValidation = resolveFhirValidation(externalTerminologyValidator);
+        if (fhirValidation == null) {
+            logger.warn("Billing profiles are configured but no FHIR terminology validation is available; "
+                    + "BillingCodeValidator will not be created");
+            return Optional.empty();
+        }
+
+        Map<String, BillingCodeValidator.BillingProfileConfig> configs = new HashMap<>();
+        for (Map.Entry<String, ExternalValidationProperties.BillingProfile> entry : billingProfiles.entrySet()) {
+            ExternalValidationProperties.BillingProfile bp = entry.getValue();
+            if (bp.getName() == null) {
+                bp.setName(entry.getKey());
+            }
+            configs.put(
+                    entry.getKey(),
+                    new BillingCodeValidator.BillingProfileConfig(
+                            bp.getName(),
+                            bp.getDescription(),
+                            bp.getCodeSystems(),
+                            bp.isEnabled(),
+                            bp.getTerminologyServerUrl()));
+            logger.info(
+                    "Registered billing profile '{}' with {} code systems (enabled={})",
+                    entry.getKey(),
+                    bp.getCodeSystems().size(),
+                    bp.isEnabled());
+        }
+
+        return Optional.of(new BillingCodeValidator(fhirValidation, configs));
+    }
+
+    private FhirTerminologyValidation resolveFhirValidation(ExternalTerminologyValidation validator) {
+        if (validator instanceof FhirTerminologyValidation ftv) {
+            return ftv;
+        }
+        if (validator instanceof ExternalTerminologyValidationChain) {
+            // Build a fresh FHIR validation from the first FHIR provider
+            Map<String, ExternalValidationProperties.Provider> providers = properties.getProvider();
+            for (Map.Entry<String, ExternalValidationProperties.Provider> entry : providers.entrySet()) {
+                if (entry.getValue().getType() == ExternalValidationProperties.ProviderType.FHIR) {
+                    WebClient webClient = buildWebClient(entry.getValue().getOauth2Client());
+                    return fhirTerminologyValidation(entry.getValue().getUrl(), webClient);
+                }
+            }
+        }
+        return null;
     }
 
     private FhirTerminologyValidation fhirTerminologyValidation(String url, WebClient webClient) {
