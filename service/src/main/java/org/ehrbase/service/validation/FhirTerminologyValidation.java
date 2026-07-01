@@ -27,7 +27,9 @@ import com.nedap.archie.rm.datavalues.DvCodedText;
 import com.nedap.archie.rm.support.identification.TerminologyId;
 import java.text.MessageFormat;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -274,6 +276,35 @@ public class FhirTerminologyValidation implements ExternalTerminologyValidation 
         }
 
         return Try.success(Boolean.TRUE);
+    }
+
+    /**
+     * Batch-validates multiple code/system pairs in a single pass.
+     * Each entry maps a code-system URL to the {@link CodePhrase} to validate.
+     * Returns per-code-system results keyed by the code-system URL.
+     */
+    public Map<String, Try<Boolean, ConstraintViolationException>> batchValidateCodes(
+            Map<String, CodePhrase> codesBySystem) {
+        Map<String, Try<Boolean, ConstraintViolationException>> results = new HashMap<>();
+        for (Map.Entry<String, CodePhrase> entry : codesBySystem.entrySet()) {
+            String system = entry.getKey();
+            CodePhrase codePhrase = entry.getValue();
+            results.put(system, validateCode(system, codePhrase));
+        }
+        return results;
+    }
+
+    /**
+     * Batch-validates a list of code/system pairs.
+     * Returns a list of results in the same order as the input, one per entry.
+     */
+    public List<Try<Boolean, ConstraintViolationException>> batchValidateCodeList(
+            List<Map.Entry<String, CodePhrase>> entries) {
+        List<Try<Boolean, ConstraintViolationException>> results = new ArrayList<>();
+        for (Map.Entry<String, CodePhrase> entry : entries) {
+            results.add(validateCode(entry.getKey(), entry.getValue()));
+        }
+        return results;
     }
 
     private Try<Boolean, ConstraintViolationException> expandValueSet(String url, CodePhrase codePhrase) {
